@@ -31,10 +31,10 @@ create table Bills(
     Outlet_ID number references Outlets(Outlet_id),
     Amount number(10,2),
     Bill_Date date
-)
+);
 
 create table Purchases(
-    Bill_id number references Bills(Bill_Date),
+    Bill_id number references Bills(Bill_id),
     Product_id number references Products(Product_id),
     Quantity number
 );
@@ -128,7 +128,7 @@ begin
 end;
 /
 
-create or replace procedure add_product (PName in varchar2(50), Price in number(10,2), status out number)
+create or replace procedure add_product (PName in varchar2, Price in number, status out number)
 is
 begin
     status := 0;
