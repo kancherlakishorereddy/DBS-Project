@@ -1,4 +1,4 @@
-# Starbucks Card Management System
+# Starbucks Sales and Card Management System
 
 This was our Academic Project for Database Systems course during 6th semster at IITBBS.
 
@@ -7,7 +7,7 @@ This was our Academic Project for Database Systems course during 6th semster at 
 [K. Jayakar Reddy](https://github.com/jayakar01) and [K. Kishorereddy](https://github.com/kancherlakishorereddy)
 
 ## Description
-
+A Database Mangement System to manage the sales and customer cards of a food chain (inspired from Starbucks). Different GUIs are made for Admin, Outlets and Customers each implementing corresponding functionalities mentioned in the [Database Design Document.pdf](https://github.com/kancherlakishorereddy/DBS-Project/blob/master/Design%20Info/Database%20Design%20Document.pdf).
 
 ## File Desccription
 
@@ -39,10 +39,6 @@ Techstack used and other things required to run the project on your local machin
    - Update the connection URL, user and password in the getConnection() call in AdminDB.java, OutletDB.java and CustomerDB.java in the respective Project's source code.
 * Customer_SCMS GUI is unfinished and shows unexpexted behaviour
 
-<br>
-
 #### This is our first time making a GUI in Java so our choices may not have been the best. You're welcome to check it out and let us know your thoughts.
-
-<br>
 
 ### Please Star :star:  the repo to show your appreciation. And let me know if  something is not clear about the project.
