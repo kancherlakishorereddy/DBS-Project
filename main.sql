@@ -21,7 +21,7 @@ create table Outlets(
 );
 
 create table Outlet_Menus(
-    Outlet_id number references Outlet_id(Outlet_id),
+    Outlet_id number references Outlets(Outlet_id),
     Product_id number references Products(Product_id)
 );
 
@@ -58,9 +58,8 @@ create sequence t_id_seq start with 1 increment by 1 minvalue 0;
 create sequence p_id_seq start with 1 increment by 1 minvalue 0;
 
 --Outlet creates customer
-create or replace procedure add_customer (CName varchar2(50), Phone_num in number, status out number)
-is
-declare
+create or replace procedure add_customer (CName varchar2, Phone_num in number, status out number)
+as
     num_unique number;
 begin
     status := 0;
@@ -82,17 +81,17 @@ end;
 /
 
 -- Update password by user or user creates password for the first time
-create or replace procedure update_password (C_id in number, new_pwd in varchar2(50), status out number)
+create or replace procedure update_password (Ph_no in number, new_pwd in varchar2, status out number)
 is
 begin
     status := 0;
-    update customers set Password = new_pwd where Card_id = C_id;
+    update customers set Password = new_pwd where Ph_num = Ph_no;
     status :=1;
     return;
 end;
 /
 
-create or replace procedure match_username (Phone_num in number, pwd out varchar2(50), status out number)
+create or replace procedure match_username (Phone_num in number, pwd out varchar2, status out number)
 is
 begin
     status := 1;
@@ -102,7 +101,7 @@ begin
     end if;
     select count(*) into status from Customers where Ph_num = Phone_num;
     if (status = 1) then
-        select password into pwd where Card_id = C_id;
+        select password into pwd from Customers where Ph_num = Phone_num;
     end if; 
     return;
 end;
@@ -112,7 +111,7 @@ create or replace procedure login_user (Phone_num in number, status out number)
 is
 begin
     status := 0;
-    update Customers set login_status = 'active' where Ph_num = Phone_num;
+    update Customers set current_status = 'active' where Ph_num = Phone_num;
     status := 1;
     return;
 end;
@@ -122,7 +121,7 @@ create or replace procedure logout_user (Phone_num in number, status out number)
 is
 begin
     status := 0;
-    update Customers set login_status = 'inactive' where Ph_num = Phone_num;
+    update Customers set current_status = 'inactive' where Ph_num = Phone_num;
     status := 1;
     return;
 end;
@@ -148,12 +147,11 @@ begin
 end;
 /
 
-create or replace procedure create_outlet (location in varchar2(50), pwd in varchar2(50), Outlet_id out number, status out number)
+create or replace procedure create_outlet (location in varchar2, pwd in varchar2, status out number)
 is
 begin
     status := 0;
-    Outlet_id := o_id_seq.nextval;
-    insert into Outlets values(Outlet_id, pwd, location);
+    insert into Outlets values(o_id_seq.nextval, pwd, location);
     status := 1;
     return;
 end;
@@ -169,40 +167,23 @@ begin
 end;
 /
 
-create or replace procedure add_to_menu (Outlet_id in number, Product_id in number, status out number)
-is
-begin
-    status := 0;
-    insert into Outlet_Menus values(Outlet_id, Product_id);
-    status := 1;
-end;
-/
-
-create or replace procedure remove_from_menu (O_id in number, P_id in number, status out number)
-is
-begin
-    status := 0;
-    delete Outlet_Menus where Outlet_id = O_id AND Product_id = P_id;
-    status := 1;
-end;
-/
-
 CREATE OR REPLACE TYPE MyType AS VARRAY(200) OF VARCHAR2(50);
 /
 
 create or replace type number_array as varray(100) of number;
 /
 
-create or replace procedure gen_bill (outlet_id in number, c_id in number, prods in number_array, qty in number_array, bill_id out number, amount out number, bill_date out varchar2(50),status out number)
-is
-declare
-    amt number(10,2);
+create or replace procedure gen_bill (outlet_id in number, c_id in number, prods in number_array, qty in number_array, bill_id out number, status out number)
+as
+    amount number(10,2);
+    prc number(10,2);
     bal number(10,2);
 begin
     status := 0;
-    for i in 1..products.count loop
-        select Price into amt from Products where Product_id = prods(i);
-        amount:= amount + qty(i)*amt;
+    amount := 0;
+    for i in 1..prods.count loop
+        select price into prc from Products where Product_id = prods(i);
+        amount:= amount + qty(i)*prc;
     end loop;
 
     select Balance into bal from Customers where Card_id = c_id;
@@ -212,12 +193,12 @@ begin
     end if;
 
     bill_id := b_id_seq.nextval;
-    for i in 1..products.count loop
+    insert into Bills values(bill_id, c_id, outlet_id, amount, sysdate);
+    update Customers set Balance = Balance - amount where Card_id = c_id;
+    for i in 1..prods.count loop
         insert into Purchases values(bill_id, prods(i), qty(i));
     end loop;
 
-    insert into Bills values(bill_id, c_id, outlet_id, amount, sysdate);
-    update Customers set Balance := Balance - amount where Card_id = c_id;
     status := 1;    
 end;
 /
